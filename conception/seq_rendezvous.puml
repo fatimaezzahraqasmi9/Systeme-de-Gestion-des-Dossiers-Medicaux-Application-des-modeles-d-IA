@@ -1,0 +1,43 @@
+@startuml DS_PlanifierRDV
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #1565C0
+  ArrowThickness 1.2
+  ActorBorderColor #E65100
+  ActorBackgroundColor #FFF3E0
+  ActorFontStyle bold
+  LifeLineBorderColor #757575
+  ParticipantBorderColor #1565C0
+  ParticipantBackgroundColor #E3F2FD
+  ParticipantFontStyle bold
+}
+
+title <b>Diagramme de Séquence — Planifier un Rendez-vous</b>
+
+actor "Patient" as Pat
+boundary "Interface (Prise RDV)" as UI
+control "RendezVousController" as Ctrl
+control "RendezVousService" as Serv
+entity "Base de Données" as DB
+
+Pat -> UI : Choisir médecin, date et heure
+UI -> Ctrl : POST /rdv (RDVDto)
+Ctrl -> Serv : creerRendezVous(RDVDto)
+Serv -> DB : verifierDisponibilite(medecinId, dateHeure)
+DB --> Serv : statut créneau
+
+alt Créneau disponible
+    Serv -> DB : save(RendezVous)
+    DB --> Serv : RDV enregistré
+    Serv --> Ctrl : RendezVousDTO
+    Ctrl --> UI : 201 Created
+    UI --> Pat : Confirmation du rendez-vous
+else Créneau occupé
+    Serv --> Ctrl : Exception (créneau indisponible)
+    Ctrl --> UI : 409 Conflict
+    UI --> Pat : "Veuillez choisir un autre créneau"
+end
+
+@enduml

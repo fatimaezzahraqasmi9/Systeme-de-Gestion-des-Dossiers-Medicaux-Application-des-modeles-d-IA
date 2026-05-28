@@ -1,0 +1,47 @@
+@startuml DS_Authentification
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #1565C0
+  ArrowThickness 1.2
+  ActorBorderColor #E65100
+  ActorBackgroundColor #FFF3E0
+  ActorFontStyle bold
+  LifeLineBorderColor #757575
+  ParticipantBorderColor #1565C0
+  ParticipantBackgroundColor #E3F2FD
+  ParticipantFontStyle bold
+}
+
+title <b>Diagramme de Séquence — Authentification</b>
+
+actor "Utilisateur" as User
+boundary "Interface (Login)" as UI
+control "AuthController" as Auth
+entity "Base de Données" as DB
+
+User -> UI : Saisir email et mot de passe
+UI -> Auth : POST /login (credentials)
+Auth -> DB : findByEmail(email)
+
+alt Utilisateur trouvé
+    DB --> Auth : Utilisateur (avec hash)
+    Auth -> Auth : Vérifier mot de passe (BCrypt)
+
+    alt Mot de passe correct
+        Auth -> Auth : Générer token JWT
+        Auth --> UI : 200 OK + Token
+        UI --> User : Redirection tableau de bord
+    else Mot de passe incorrect
+        Auth --> UI : 401 Unauthorized
+        UI --> User : "Identifiants invalides"
+    end
+
+else Utilisateur non trouvé
+    DB --> Auth : null
+    Auth --> UI : 401 Unauthorized
+    UI --> User : "Identifiants invalides"
+end
+
+@enduml
