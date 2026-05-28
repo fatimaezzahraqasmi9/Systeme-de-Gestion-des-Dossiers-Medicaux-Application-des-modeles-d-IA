@@ -1,0 +1,79 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Définition des couleurs pour correspondre à l'image
+skinparam usecase {
+  BackgroundColor<<Patient>> LightGreen
+  BackgroundColor<<Medecin>> Lavender
+  BackgroundColor<<Secretaire>> PeachPuff
+  BackgroundColor<<Auth>> Beige
+}
+
+actor "Patient" as Pat
+actor "Médecin" as Med
+actor "Secrétaire" as Sec
+
+rectangle "Système de gestion de la clinique" {
+
+  ' Cas d'utilisation Patient
+  usecase "Consulter dossier" as UC_Pat_Dossier <<Patient>>
+  usecase "Consulter historique" as UC_Pat_Histo <<Patient>>
+  usecase "Prendre rendez-vous" as UC_Pat_RDV <<Patient>>
+
+  ' Cas d'utilisation Médecin
+  usecase "Prescrire ordonnance" as UC_Med_Ordo <<Medecin>>
+  usecase "Consulter dossier patient" as UC_Med_Dossier <<Medecin>>
+  usecase "Demander prédiction IA" as UC_Med_IA <<Medecin>>
+  usecase "Ajouter consultation" as UC_Med_Consult <<Medecin>>
+  usecase "Gérer dossier médical" as UC_Med_Gerer <<Medecin>>
+
+  ' Cas d'utilisation Secrétaire
+  usecase "Planifier rendez-vous" as UC_Sec_RDV <<Secretaire>>
+  
+  rectangle "CRUD — dossiers patients" {
+    usecase "Lire dossier patient" as UC_CRUD_Read <<Secretaire>>
+    usecase "Modifier dossier patient" as UC_CRUD_Update <<Secretaire>>
+    usecase "Supprimer dossier patient" as UC_CRUD_Delete <<Secretaire>>
+    usecase "Créer dossier patient" as UC_CRUD_Create <<Secretaire>>
+  }
+
+  ' Authentification
+  usecase "S'authentifier" as UC_Auth <<Auth>>
+}
+
+' Relations Acteurs -> Cas d'utilisation
+Pat --> UC_Pat_Dossier
+Pat --> UC_Pat_Histo
+Pat --> UC_Pat_RDV
+
+Med --> UC_Med_Ordo
+Med --> UC_Med_Dossier
+Med --> UC_Med_IA
+Med --> UC_Med_Consult
+Med --> UC_Med_Gerer
+
+Sec --> UC_Sec_RDV
+Sec --> UC_CRUD_Read
+Sec --> UC_CRUD_Update
+Sec --> UC_CRUD_Delete
+Sec --> UC_CRUD_Create
+
+' Relations <<include>> vers Authentification
+UC_Pat_Dossier ..> UC_Auth : <<include>>
+UC_Pat_Histo ..> UC_Auth : <<include>>
+UC_Pat_RDV ..> UC_Auth : <<include>>
+
+UC_Med_Ordo ..> UC_Auth : <<include>>
+UC_Med_Dossier ..> UC_Auth : <<include>>
+UC_Med_IA ..> UC_Auth : <<include>>
+UC_Med_Consult ..> UC_Auth : <<include>>
+UC_Med_Gerer ..> UC_Auth : <<include>>
+
+UC_Sec_RDV ..> UC_Auth : <<include>>
+UC_CRUD_Read ..> UC_Auth : <<include>>
+UC_CRUD_Update ..> UC_Auth : <<include>>
+UC_CRUD_Delete ..> UC_Auth : <<include>>
+UC_CRUD_Create ..> UC_Auth : <<include>>
+
+@enduml
