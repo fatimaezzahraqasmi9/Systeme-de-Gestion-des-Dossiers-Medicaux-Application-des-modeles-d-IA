@@ -1,0 +1,7 @@
+*.exe
+*.zip
+.vscode/
+.claude/
+node_modules/
+target/
+.env

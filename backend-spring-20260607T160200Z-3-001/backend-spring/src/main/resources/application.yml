@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: backend-spring
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/gestion_clinique}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:qasmieee}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
+
+server:
+  port: 8080
+
+application:
+  security:
+    jwt:
+      # Cle secrete encodee en Base64 (a externaliser en variable d'environnement en production)
+      secret-key: ${JWT_SECRET:c2VjcmV0LWtleS1nZXN0aW9uLWNsaW5pcXVlLXRyZXMtbG9uZ3VlLXBvdXItaG1hYy1zaGEyNTYtMjAyNg==}
+      # Duree de validite du token : 24 heures (en millisecondes)
+      expiration: 86400000
+
+  # Repertoire de stockage des documents medicaux (PDF)
+  storage:
+    location: ${STORAGE_LOCATION:uploads}
+
+  # Microservice IA (FastAPI) appele lors de la creation d'une consultation
+  ai-service:
+    url: ${AI_SERVICE_URL:http://localhost:8000}
+    enabled: ${AI_SERVICE_ENABLED:true}

@@ -1,0 +1,77 @@
+# Orchestration globale du projet "Gestion des dossiers medicaux".
+# Lancer :  docker compose up --build
+#
+# Services :
+#   - postgres        : base de donnees PostgreSQL (expose en 5433 cote hote)
+#   - ai-service      : microservice IA FastAPI (port 8000)
+#   - backend-spring  : backend principal Spring Boot (port 8080)
+#   - frontend-react  : (Phase 5 - a decommenter une fois le projet React cree)
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: clinique-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "2006"
+      POSTGRES_DB: gestion_clinique
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gestion_clinique"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - clinique-net
+
+  ai-service:
+    build: ./ai-service
+    container_name: clinique-ai-service
+    ports:
+      - "8000:8000"
+    # La cle GEMINI_API_KEY est lue depuis ai-service/.env (non commite).
+    env_file:
+      - ./ai-service/.env
+    networks:
+      - clinique-net
+
+  backend-spring:
+    build: ./backend-spring
+    container_name: clinique-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-service:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/gestion_clinique
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "2006"
+      AI_SERVICE_URL: http://ai-service:8000
+      AI_SERVICE_ENABLED: "true"
+    networks:
+      - clinique-net
+
+  # ===== Phase 5 : Frontend React (Vite + Nginx) =====
+  frontend-react:
+    build: ./frontend-react
+    container_name: clinique-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend-spring
+      - ai-service
+    networks:
+      - clinique-net
+
+volumes:
+  postgres_data:
+
+networks:
+  clinique-net:
+    driver: bridge
